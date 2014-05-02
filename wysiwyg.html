@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <link rel="stylesheet" href="js/vendor/redactor/redactor.css" />
+  <script type="text/javascript" src="https://cdn.goinstant.net/v1/platform.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdn.goinstant.net/widgets/user-colors/latest/user-colors.min.js"></script>
+  <script type="text/javascript" src="https://cdn.goinstant.net/widgets/user-list/latest/user-list.min.js"></script>
+  <script src="js/vendor/redactor/redactor.min.js"></script>
+</head>
+<body>
+
+  <textarea style="font: Helvetica; font-size:14px;" id='editor' name='editor' rows=30 cols=80></textarea>
+  <script type='text/javascript'>
+
+    $('#editor').redactor({
+      keypressCallback: function(e) {
+        console.log('keypress');
+        console.log(e);
+      },
+    });
+
+    $('#editor').on('keypress', function(e) {
+      console.log(e);
+    });
+
+    var url = 'https://goinstant.net/8a933dbbb653/my-application'
+    var connect = goinstant.connect(url);
+
+    var otKey;
+    var room;
+
+    connect.then(function(result) {
+      room = result.rooms[0];
+      otKey = room.ot('text');
+
+      otKey.on('insert', function(operation, context) {
+        var position = operation.index;
+        var text = operation.text
+        console.log(text);
+        editor.insertHtml(text);
+      });
+
+      otKey.on('delete', function(operation, context) {
+        content = $('#editor').val();
+        var position = operation.index;
+        var len = operation.length;
+        var text = operation.text
+        var newContent = content.substr(0, position) + content.substr(position + len);
+        console.log(operation);
+        console.log(newContent);
+        $('#editor').val(newContent);
+      });
+    });
+
+    function deleteSelected(start, end) {
+      if(start != end) {
+        var length = end - start
+        var operation = { index: start, length: length };
+        otKey.delete(operation);
+        console.log(operation);
+        return true
+      } else {
+        return false
+      }
+    }
+  </script>
+
+</body>
+</html>
